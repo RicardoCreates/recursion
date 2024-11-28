@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<h1>Recursion</h1>
+<div id="output"></div>
+<script>
+    const data = [
+        {
+            "name": "hallo",
+            "child": [
+                {
+                    "name": "hallo1",
+                    "child": [
+                        {
+                            "name": "hallo2"
+                        }
+                    ]
+                }
+            ]
+        }
+    ];
+
+    function printData(items, parentElement) {
+        items.forEach(item => {
+
+            const itemElement = document.createElement('div');
+            itemElement.textContent = item.name;
+            parentElement.appendChild(itemElement);
+
+            if (item.child) {
+                const childContainer = document.createElement('div');
+                childContainer.style.marginLeft = "20px";
+                parentElement.appendChild(childContainer);
+                printData(item.child, childContainer);
+            }
+        });
+    }
+
+
+    const outputElement = document.getElementById('output');
+    printData(data, outputElement);
+</script>
+</body>
+</html>
