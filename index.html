@@ -1,23 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
+<html>
+<head></head>
 <body>
-<h1>Recursion</h1>
-<div id="output"></div>
+
+<canvas id="canvas" width="1000" height="1000"></canvas>
+
 <script>
-    const data = [
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.lineWidth = 1;
+
+    function drawProduct(x, y, charge, artnr, bez) {
+        ctx.strokeRect(x, y, 300, 40);
+        ctx.font = "16px Arial";
+        ctx.fillText(charge, x + 4, y + 18);
+        ctx.fillText(artnr + " - " + bez, x + 4, y + 34);
+    }
+
+    function lineV(x, y, height) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x, y + height);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    function lineH(x, y, width) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + width, y);
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    let data = [
         {
-            "name": "hallo",
-            "child": [
+            "charge": "10101010",
+            "artnr": "14100",
+            "bez": "Leinöl lose",
+            "childs": [
                 {
-                    "name": "hallo1",
-                    "child": [
+                    "charge": "10101020",
+                    "artnr": "14111",
+                    "bez": "Leinöl 100 ml",
+                    "childs": null
+                },
+                {
+                    "charge": "10101020",
+                    "artnr": "14151",
+                    "bez": "Leinöl 500 ml",
+                    "childs": [
                         {
-                            "name": "hallo2"
+                            "charge": "10101020",
+                            "artnr": "14111",
+                            "bez": "Leinöl 250 ml",
+                            "childs": null
                         }
                     ]
                 }
@@ -25,25 +61,61 @@
         }
     ];
 
-    function printData(items, parentElement) {
-        items.forEach(item => {
+    let display = [];
 
-            const itemElement = document.createElement('div');
-            itemElement.textContent = item.name;
-            parentElement.appendChild(itemElement);
+    function calc(data, x = 0, y = 0) {
+        for (let i in data) {
+            let ele = data[i];
+            ele.x = x;
+            ele.y = y;
 
-            if (item.child) {
-                const childContainer = document.createElement('div');
-                childContainer.style.marginLeft = "20px";
-                parentElement.appendChild(childContainer);
-                printData(item.child, childContainer);
+            display.push({
+                "charge": ele.charge,
+                "artnr": ele.artnr,
+                "bez": ele.bez,
+                "x": x,
+                "y": y,
+                "hasChilds": (ele.childs !== null),
+                "childs": ele.childs
+            });
+
+            if (ele.childs !== null) {
+                calc(ele.childs, x + 40, y + 80); // Rekursive Platzierung der Child-Produkte
             }
-        });
+
+            y += 80; // Abstand zwischen Sibling-Produkten
+        }
     }
 
+    function drawConnections(data) {
+        for (let i in data) {
+            let ele = data[i];
+            drawProduct(ele.x, ele.y, ele.charge, ele.artnr, ele.bez);
 
-    const outputElement = document.getElementById('output');
-    printData(data, outputElement);
+            if (ele.hasChilds) {
+                let startX = ele.x ; // Mitte des Parent-Kästchens
+                let startY = ele.y ;  // Unterkante des Parent-Kästchens
+                let childStartY = ele.childs[0].y; // Y-Position des ersten Childs
+                let childEndY = ele.childs[ele.childs.length - 1].y; // Y-Position des letzten Childs
+
+                // Zeichne vertikale Linie zu allen Kindern
+                lineV(startX, startY, childEndY - startY + 40);
+
+                // Zeichne horizontale Linien zu jedem einzelnen Child
+                for (let child of ele.childs) {
+                    let childX = child.x;
+                    let childY = child.y;
+                    lineH(startX, childY + 20, childX - startX); // Von Mitte Parent zur Mitte Child
+                }
+
+                drawConnections(ele.childs); // Rekursion für die Child-Produkte
+            }
+        }
+    }
+
+    calc(data);
+    drawConnections(display);
 </script>
+
 </body>
 </html>
